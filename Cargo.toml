@@ -1,0 +1,21 @@
+[package]
+name = "google-jwt-validator"
+version = "0.1.0"
+authors = ["Kviring Aleksey <alex@kviring.com>"]
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+jsonwebtoken = "7.2.0"
+serde = { version = "1.0", features = ["derive"] }
+reqwest = { version = "0.11", features = ["json"] }
+headers = "0.3.1"
+tokio = { version = "1.0", features = ["rt-multi-thread", "time", "fs", "macros", "net"] }
+
+[dev-dependencies]
+httpmock = "0.5.5"
+openssl = { version = "0.10", features = ["vendored"] }
+ring = "0.16.5"
+rand = "0.7.0"
+base64 = "0.13.0"
