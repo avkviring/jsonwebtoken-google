@@ -1,9 +1,8 @@
-
 use std::collections::HashMap;
 
-use std::time::{Instant};
+use std::time::Instant;
 
-use headers::{Header};
+use headers::Header;
 use jsonwebtoken::DecodingKey;
 use reqwest::header::{HeaderMap, CACHE_CONTROL};
 
@@ -22,8 +21,6 @@ pub struct GoogleKey {
     e: String,
 }
 
-const GOOGLE_CERT: &str = "https://www.googleapis.com/oauth2/v3/certs";
-
 #[derive(Debug)]
 pub enum GoogleKeyProviderError {
     KeyNotFound,
@@ -32,25 +29,16 @@ pub enum GoogleKeyProviderError {
 }
 
 #[derive(Debug)]
-pub struct GoogleKeyProvider {
+pub struct GooglePublicKeyProvider {
     url: String,
     keys: HashMap<String, GoogleKey>,
     expiration_time: Option<Instant>,
 }
 
-impl GoogleKeyProvider {
-    pub fn new() -> Self {
+impl GooglePublicKeyProvider {
+    pub fn new(public_key_url: &str) -> Self {
         Self {
-            url: GOOGLE_CERT.to_owned(),
-            keys: Default::default(),
-            expiration_time: None,
-        }
-    }
-
-    #[cfg(test)]
-    pub fn stub(url: &str) -> Self {
-        Self {
-            url: url.to_owned(),
+            url: public_key_url.to_owned(),
             keys: Default::default(),
             expiration_time: None,
         }
@@ -59,7 +47,7 @@ impl GoogleKeyProvider {
     pub async fn reload(&mut self) -> Result<(), GoogleKeyProviderError> {
         match reqwest::get(&self.url).await {
             Ok(r) => {
-                let expiration_time = GoogleKeyProvider::parse_expiration_time(&r.headers());
+                let expiration_time = GooglePublicKeyProvider::parse_expiration_time(&r.headers());
                 match r.json::<GoogleKeys>().await {
                     Ok(google_keys) => {
                         self.keys.clear();
@@ -118,7 +106,7 @@ mod tests {
     use httpmock::MockServer;
     use jsonwebtoken::DecodingKey;
 
-    use crate::keys::{GoogleKeyProvider, GoogleKeyProviderError};
+    use crate::keys::{GoogleKeyProviderError, GooglePublicKeyProvider};
 
     #[tokio::test]
     async fn should_parse_keys() {
@@ -140,7 +128,7 @@ mod tests {
                 .body(resp);
         });
         let original = DecodingKey::from_rsa_components(n, e);
-        let mut provider = GoogleKeyProvider::stub(server.url("/").as_str());
+        let mut provider = GooglePublicKeyProvider::new(server.url("/").as_str());
         assert!(matches!(provider.get_key(kid).await, Result::Ok(result) if result==original));
         assert!(matches!(
             provider.get_key("missing-key").await,
@@ -167,7 +155,7 @@ mod tests {
                 .body("{\"keys\":[]}");
         });
 
-        let mut provider = GoogleKeyProvider::stub(server.url("/").as_str());
+        let mut provider = GooglePublicKeyProvider::new(server.url("/").as_str());
         let key_result = provider.get_key(kid).await;
         assert!(matches!(
             key_result,
