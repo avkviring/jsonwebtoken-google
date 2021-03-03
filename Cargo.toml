@@ -21,13 +21,13 @@ headers = "0.3.1"
 tokio = "1.0"
 httpmock = { version = "0.5.5", optional = true }
 openssl = { version = "0.10", features = ["vendored"], optional = true }
-rand = { version = "0.7.0", optional = true }
+rand = { version = "0.8.3", optional = true }
 base64 = { version = "0.13.0", optional = true }
 
 [dev-dependencies]
 httpmock = { version = "0.5.5" }
 openssl = { version = "0.10", features = ["vendored"] }
-rand = { version = "0.7.0" }
+rand = { version = "0.8.3" }
 base64 = { version = "0.13.0" }
 
 [features]
