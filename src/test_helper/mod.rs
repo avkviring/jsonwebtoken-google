@@ -12,12 +12,14 @@ use crate::Parser;
 pub const KID: &str = "some-kid";
 pub const CLIENT_ID: &str = "some-client-id";
 pub const EMAIL: &str = "alex@kviring.com";
+pub const SUB: &str = "11112222333344445555";
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct TokenClaims {
     pub email: String,
     pub aud: String,
     pub iss: String,
+    pub sub: String,
     pub exp: u64,
 }
 
@@ -36,6 +38,7 @@ impl TokenClaims {
                 .unwrap()
                 .as_secs(),
             iss: "https://accounts.google.com".to_owned(),
+            sub: SUB.to_owned(),
         }
     }
 
