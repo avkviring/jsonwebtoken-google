@@ -19,13 +19,13 @@ serde = { version = "1.0", features = ["derive"] }
 reqwest = { version = "0.11", features = ["json"] }
 headers = "0.3.1"
 tokio = "1.0"
-httpmock = { version = "0.5.5", optional = true }
+httpmock = { version = "0.6.2", optional = true }
 openssl = { version = "0.10", features = ["vendored"], optional = true }
 rand = { version = "0.8.3", optional = true }
 base64 = { version = "0.13.0", optional = true }
 
 [dev-dependencies]
-httpmock = { version = "0.5.5" }
+httpmock = { version = "0.6.2" }
 openssl = { version = "0.10", features = ["vendored"] }
 rand = { version = "0.8.3" }
 base64 = { version = "0.13.0" }
