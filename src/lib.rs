@@ -2,6 +2,7 @@ use std::collections::HashSet;
 
 use jsonwebtoken::{Algorithm, Validation};
 use serde::de::DeserializeOwned;
+use thiserror::Error;
 
 use crate::keys::{GoogleKeyProviderError, GooglePublicKeyProvider};
 
@@ -10,20 +11,19 @@ mod keys;
 #[cfg(any(test, feature = "test-helper"))]
 pub mod test_helper;
 
+
 ///
 /// Parser errors
 ///
-#[derive(Debug)]
+#[derive(Error, Debug)]
 pub enum ParserError {
+    #[error("Wrong header.")]
     WrongHeader,
+    #[error("Unknown kid.")]
     UnknownKid,
-    ///
-    /// Download public key error
-    ///
+    #[error("Download public key error - {0}.")]
     KeyProvider(GoogleKeyProviderError),
-    ///
-    /// jsonwebtoken can not decode token (problem with sign or validation)
-    ///
+    #[error("Wrong token format - {0}.")]
     WrongToken(jsonwebtoken::errors::Error),
 }
 
@@ -93,7 +93,6 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use jsonwebtoken::errors::ErrorKind;
-
     use crate::ParserError;
     use crate::test_helper::{setup, TokenClaims};
 

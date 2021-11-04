@@ -5,6 +5,7 @@ use std::time::Instant;
 use headers::Header;
 use jsonwebtoken::DecodingKey;
 use reqwest::header::{HeaderMap, CACHE_CONTROL};
+use thiserror::Error;
 
 use serde::Deserialize;
 
@@ -21,10 +22,13 @@ pub struct GoogleKey {
     e: String,
 }
 
-#[derive(Debug)]
+#[derive(Error,Debug)]
 pub enum GoogleKeyProviderError {
+    #[error("key not found")]
     KeyNotFound,
+    #[error("network error {0}")]
     FetchError(String),
+    #[error("parse error {0}")]
     ParseError(String),
 }
 
