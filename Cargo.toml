@@ -33,5 +33,6 @@ rand = { version = "0.8.3" }
 base64 = { version = "0.13.0" }
 
 [features]
+default = ["reqwest/default"]
 test-helper = ["httpmock", "openssl", "rand", "base64"]
 rustls-tls = ["reqwest/rustls-tls"]
