@@ -14,7 +14,7 @@ repository = "https://github.com/cheetah-games/jsonwebtoken-google"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-jsonwebtoken = "7.2.0"
+jsonwebtoken = "8.0.1"
 serde = { version = "1.0", features = ["derive"] }
 reqwest = { version = "0.11", default-features = false, features = ["json"] }
 headers = "0.3.1"
