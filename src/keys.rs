@@ -1,13 +1,12 @@
 use std::collections::HashMap;
-
 use std::time::Instant;
 
 use headers::Header;
 use jsonwebtoken::DecodingKey;
-use reqwest::header::{HeaderMap, CACHE_CONTROL};
-use thiserror::Error;
-
+use jsonwebtoken::errors::Error;
+use reqwest::header::{CACHE_CONTROL, HeaderMap};
 use serde::Deserialize;
+use thiserror::Error;
 
 #[derive(Deserialize, Clone)]
 pub struct GoogleKeys {
@@ -16,13 +15,12 @@ pub struct GoogleKeys {
 
 #[derive(Deserialize, Clone, Debug)]
 pub struct GoogleKey {
-    alg: jsonwebtoken::Algorithm,
     kid: String,
     n: String,
     e: String,
 }
 
-#[derive(Error,Debug)]
+#[derive(Error, Debug)]
 pub enum GoogleKeyProviderError {
     #[error("key not found")]
     KeyNotFound,
@@ -30,6 +28,8 @@ pub enum GoogleKeyProviderError {
     FetchError(String),
     #[error("parse error {0}")]
     ParseError(String),
+    #[error("create key error {0}")]
+    CreateKeyError(Error),
 }
 
 #[derive(Debug)]
@@ -89,15 +89,15 @@ impl GooglePublicKeyProvider {
     pub async fn get_key(
         &mut self,
         kid: &str,
-    ) -> Result<DecodingKey<'static>, GoogleKeyProviderError> {
+    ) -> Result<DecodingKey, GoogleKeyProviderError> {
         if self.expiration_time.is_none() || self.is_expire() {
             self.reload().await?
         }
         match self.keys.get(&kid.to_owned()) {
             None => Result::Err(GoogleKeyProviderError::KeyNotFound),
             Some(key) => {
-                let key = DecodingKey::from_rsa_components(key.n.as_str(), key.e.as_str());
-                Result::Ok(key.into_static())
+                DecodingKey::from_rsa_components(key.n.as_str(), key.e.as_str()).map_err(|e|
+                    GoogleKeyProviderError::CreateKeyError(e))
             }
         }
     }
@@ -108,7 +108,6 @@ mod tests {
     use std::time::Duration;
 
     use httpmock::MockServer;
-    use jsonwebtoken::DecodingKey;
 
     use crate::keys::{GoogleKeyProviderError, GooglePublicKeyProvider};
 
@@ -131,9 +130,9 @@ mod tests {
                 .header("Content-Type", "application/json; charset=UTF-8")
                 .body(resp);
         });
-        let original = DecodingKey::from_rsa_components(n, e);
         let mut provider = GooglePublicKeyProvider::new(server.url("/").as_str());
-        assert!(matches!(provider.get_key(kid).await, Result::Ok(result) if result==original));
+
+        assert!(matches!(provider.get_key(kid).await, Result::Ok(_)));
         assert!(matches!(
             provider.get_key("missing-key").await,
             Result::Err(_)

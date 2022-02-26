@@ -1,5 +1,3 @@
-use std::collections::HashSet;
-
 use jsonwebtoken::{Algorithm, Validation};
 use serde::de::DeserializeOwned;
 use thiserror::Error;
@@ -62,17 +60,12 @@ impl Parser {
                 None => Result::Err(ParserError::UnknownKid),
                 Some(kid) => match provider.get_key(kid.as_str()).await {
                     Ok(key) => {
-                        let mut aud = HashSet::default();
-                        aud.insert(self.client_id.to_owned());
-                        let validation = Validation {
-                            leeway: 0,
-                            validate_exp: true,
-                            validate_nbf: false,
-                            aud: Option::Some(aud),
-                            iss: Option::Some("https://accounts.google.com".to_owned()),
-                            sub: None,
-                            algorithms: vec![Algorithm::RS256],
-                        };
+                        let aud = vec![self.client_id.to_owned()];
+                        let mut validation = Validation::new(Algorithm::RS256);
+                        validation.set_audience(&aud);
+                        validation.set_issuer(&["https://accounts.google.com".to_string(), "accounts.google.com".to_string()]);
+                        validation.validate_exp = true;
+                        validation.validate_nbf = false;
                         let result = jsonwebtoken::decode::<T>(token, &key, &validation);
                         match result {
                             Result::Ok(token_data) => Result::Ok(token_data.claims),
@@ -93,6 +86,7 @@ impl Parser {
 #[cfg(test)]
 mod tests {
     use jsonwebtoken::errors::ErrorKind;
+
     use crate::ParserError;
     use crate::test_helper::{setup, TokenClaims};
 
