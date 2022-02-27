@@ -1,3 +1,5 @@
+extern crate core;
+
 use jsonwebtoken::{Algorithm, Validation};
 use serde::de::DeserializeOwned;
 use thiserror::Error;
