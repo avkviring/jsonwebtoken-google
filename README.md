@@ -15,10 +15,3 @@ async fn main() {
     let claims = parser.parse::<TokenClaims>("some-token").await.unwrap();
 }
 ```
-
-## Use rustls instead of openssl
-
-```toml
-[dependencies]
-jsonwebtoken-google = {version = "0.1.3", default-features = false, features = ["rustls-tls"]}
-```
