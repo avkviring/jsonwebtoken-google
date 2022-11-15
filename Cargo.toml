@@ -23,7 +23,7 @@ httpmock = { version = "0.6.2", optional = true }
 rustls = { version = "0.20.2" }
 base64 = { version = "0.13.0", optional = true }
 thiserror = "1.0.30"
-rsa = "0.5.0"
+rsa = "0.7.2"
 rand = "0.8.5"
 
 [dev-dependencies]
