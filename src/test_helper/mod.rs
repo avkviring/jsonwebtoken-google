@@ -1,11 +1,14 @@
 use std::ops::Add;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
+use base64::Engine;
+use base64::engine::general_purpose::URL_SAFE_NO_PAD;
 use httpmock::MockServer;
 use jsonwebtoken::{Algorithm, EncodingKey, Header};
 use rand::thread_rng;
 use rsa::pkcs8::EncodePrivateKey;
-use rsa::{PublicKeyParts, RsaPrivateKey};
+use rsa::traits::PublicKeyParts;
+use rsa::RsaPrivateKey;
 use serde::{Deserialize, Serialize};
 
 use crate::Parser;
@@ -77,8 +80,8 @@ pub fn setup_public_key_server(claims: &TokenClaims) -> (String, MockServer) {
         .unwrap();
     let key = EncodingKey::from_rsa_pem(der.as_bytes()).unwrap();
     let token = jsonwebtoken::encode::<TokenClaims>(&header, claims, &key).unwrap();
-    let n = base64::encode_config(private_key.n().to_bytes_be(), base64::URL_SAFE_NO_PAD);
-    let e = base64::encode_config(private_key.e().to_bytes_be(), base64::URL_SAFE_NO_PAD);
+    let n = URL_SAFE_NO_PAD.encode(private_key.n().to_bytes_be());
+    let e = URL_SAFE_NO_PAD.encode(private_key.e().to_bytes_be());
     let resp = format!("{{\"keys\": [{{\"kty\": \"RSA\",\"use\": \"sig\",\"e\": \"{}\",\"n\": \"{}\",\"alg\": \"RS256\",\"kid\": \"{}\"}}]}}", e, n, KID);
 
     let server = MockServer::start();
